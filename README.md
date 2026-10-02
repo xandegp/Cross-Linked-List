@@ -9,16 +9,27 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
 
 ### Functions:
 .start_spreadsheet
+
 .get_value
+
 .sum_range
+
 .count_non-null
+
 .define_cell
+
 .remove_cell
+
 .transpose
+
 .undo
+
 .show_spreadsheet
+
 .show_history
+
 .free_all
+
 
 ### Pre-Requisits:
 . GCC or any C compiler
