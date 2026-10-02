@@ -1,9 +1,5 @@
 /* ============================================================================
-    EP1 - Planilha Esparsa com Histórico de Alterações
-    TEMPLATE - preencha os TODOs abaixo. Não altere assinaturas de função,
-    nomes ou ordem de campos de struct.
- 
-    Uso: ./ep_XXXX arquivo_entrada.txt arquivo_saida.txt
+    Crossed Linked-List
  ============================================================================ */
 
 #include <stdio.h>
@@ -11,54 +7,54 @@
 #include <stdbool.h>
 
 /* ----------------------------------------------------------------------
-  Estruturas de dados (não altere nomes e ordem de campos)
+  Data Structures
  ---------------------------------------------------------------------- */
 
-typedef struct celula {
-    int linha;
-    int coluna;
-    int valor;
-    struct celula *proxima_linha;
-    struct celula *proxima_coluna;
-} celula_t;
+typedef struct cell {
+    int line;
+    int col;
+    int value;
+    struct cell *next_line;
+    struct cell *next_col;
+} cell_t;
 
-typedef struct fileira {
-    int indice;
-    celula_t* primeiro;
-    struct fileira *proximo;
-} fileira_t;
+typedef struct row_col {
+    int index;
+    cell_t* first;
+    struct row_col *next;
+} row_col_t;
 
 typedef struct {
-    bool transposicao;
-    int linha;
-    int coluna;
+    bool is_transpose;
+    int line;
+    int col;
     union {
-        int valor_anterior;
-        int tamanho;
+        int previous_value;
+        int size;
     };
-} operacao_t;
+} operation_t;
 
-typedef struct elo_pilha {
-    operacao_t op;
-    struct elo_pilha *proximo;
-} elo_pilha_t;
-
-typedef struct {
-    elo_pilha_t* topo;
-} pilha_t;
+typedef struct stack_node {
+    operation_t op;
+    struct stack_node *next;
+} stack_node_t;
 
 typedef struct {
-    fileira_t* primeira_linha;
-    fileira_t* primeira_coluna;
-    int total_celulas;
-    pilha_t historico;
-} planilha_t;
+    stack_node_t* top;
+} stack_t;
+
+typedef struct {
+    row_col_t* first_line;
+    row_col_t* first_col;
+    int total_cells;
+    stack_t history;
+} spreadsheet_t;
 
 /* ---------------------------------------------------------------------- *
-    Funções auxiliar para leitura das strings dos comandos
+    Helper function for command string comparison
  ---------------------------------------------------------------------- */
 
-int igual(char* a, char* b) {
+int equals(char* a, char* b) {
     int i = 0;
     while (a[i] == b[i] && a[i] != '\0') i++;
 
@@ -66,581 +62,533 @@ int igual(char* a, char* b) {
 }
 
 /* ---------------------------------------------------------------------- *
-    Funções obrigatórias (não altere as assinaturas)
+    Spreadsheet Operations
  ---------------------------------------------------------------------- */
 
-void inicializar_planilha(planilha_t *p) {
-    // TODO: inicialize primeiraLinha, primeiraColuna, total_celulas e historico.topo
-    p->primeira_linha = NULL;
-    p->primeira_coluna = NULL;
-    p->total_celulas = 0;
-    p->historico.topo = NULL;
+void start_spreadsheet(spreadsheet_t *p) {
+    p->first_line = NULL;
+    p->first_col = NULL;
+    p->total_cells = 0;
+    p->history.top = NULL;
 }
 
-celula_t* buscar_celula(planilha_t *p, int lin, int col,
-                      celula_t** cel_ant_linha, celula_t** cel_ant_coluna,
-                      fileira_t** fil_ant_linha, fileira_t** fil_ant_coluna) {
-    /* TODO: localize a celula (lin,col), preencha os quatro antecessores 
-        por referencia, retorne NULL se a celula nao existir */
+cell_t* search_cell(spreadsheet_t *p, int line, int col,
+                    cell_t** prev_cell_line, cell_t** prev_cell_col,
+                    row_col_t** prev_row_line, row_col_t** prev_row_col) {
+    cell_t* current = NULL;
+    cell_t* temp_line = NULL;
+    cell_t* temp_col = NULL;
 
-    celula_t* atual = NULL;
-    celula_t* temp_linha = NULL;
-    celula_t* temp_col = NULL;
+    if (prev_cell_line != NULL) *prev_cell_line = NULL;
+    if (prev_cell_col != NULL) *prev_cell_col = NULL;
+    if (prev_row_line != NULL) *prev_row_line = NULL;
+    if (prev_row_col != NULL) *prev_row_col = NULL;
 
-    if(cel_ant_linha != NULL) *cel_ant_linha = NULL;
-    if(cel_ant_coluna != NULL) *cel_ant_coluna = NULL;
-    if(fil_ant_linha != NULL) *fil_ant_linha = NULL;
-    if(fil_ant_coluna != NULL) *fil_ant_coluna = NULL;
+    if (line < 0 || col < 0 || p == NULL) return NULL;
 
-    if(lin < 0 || col < 0 || p == NULL) return NULL;
+    row_col_t *curr_row_line = p->first_line;
+    row_col_t *curr_row_col = p->first_col;
 
-    
-    fileira_t * fil_atual_linha = p->primeira_linha;
-    fileira_t * fil_atual_coluna = p->primeira_coluna;
-
-
-    while(fil_atual_linha != NULL && fil_atual_linha->indice < lin){
-        if (fil_ant_linha)*fil_ant_linha = fil_atual_linha;
-        fil_atual_linha = fil_atual_linha->proximo;
+    while (curr_row_line != NULL && curr_row_line->index < line) {
+        if (prev_row_line) *prev_row_line = curr_row_line;
+        curr_row_line = curr_row_line->next;
     }
-    while(fil_atual_coluna != NULL && fil_atual_coluna->indice < col){
-        if (fil_ant_coluna)*fil_ant_coluna = fil_atual_coluna;
-        fil_atual_coluna = fil_atual_coluna->proximo;
+    while (curr_row_col != NULL && curr_row_col->index < col) {
+        if (prev_row_col) *prev_row_col = curr_row_col;
+        curr_row_col = curr_row_col->next;
     }
 
-    if(fil_atual_linha != NULL && fil_atual_linha->indice == lin){
-        temp_linha = fil_atual_linha->primeiro;
-        while(temp_linha != NULL && temp_linha->coluna < col){
-            if (cel_ant_linha)*cel_ant_linha = temp_linha;
-            temp_linha = temp_linha->proxima_coluna;
+    if (curr_row_line != NULL && curr_row_line->index == line) {
+        temp_line = curr_row_line->first;
+        while (temp_line != NULL && temp_line->col < col) {
+            if (prev_cell_line) *prev_cell_line = temp_line;
+            temp_line = temp_line->next_col;
         }
     }
 
-    if(temp_linha != NULL && temp_linha->coluna == col) atual = temp_linha;
+    if (temp_line != NULL && temp_line->col == col) current = temp_line;
 
-    if(fil_atual_coluna != NULL && fil_atual_coluna->indice == col){
-        temp_col = fil_atual_coluna->primeiro;
-        while(temp_col != NULL && temp_col->linha < lin){
-            if (cel_ant_coluna)*cel_ant_coluna = temp_col;
-            temp_col = temp_col->proxima_linha;
+    if (curr_row_col != NULL && curr_row_col->index == col) {
+        temp_col = curr_row_col->first;
+        while (temp_col != NULL && temp_col->line < line) {
+            if (prev_cell_col) *prev_cell_col = temp_col;
+            temp_col = temp_col->next_line;
         }
     }
     
-    return atual;
+    return current;
 }
 
-int obter_valor(planilha_t *p, int linha, int coluna) { 
-    // TODO: use buscarCelula; retorne 0 se a celula nao existir
-    if(p == NULL) return 0;
+int get_value(spreadsheet_t *p, int line, int col) {
+    if (p == NULL) return 0;
 
-    celula_t*atual = buscar_celula(p,linha,coluna,NULL,NULL,NULL,NULL);
+    cell_t* current = search_cell(p, line, col, NULL, NULL, NULL, NULL);
 
-    if(atual != NULL) return atual->valor;
+    if (current != NULL) return current->value;
 
     return 0;
 }
 
-int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
-    // TODO: some os valores das celulas nao nulas no intervalo dado
-    if(p == NULL || linha_ini < 0 || linha_fim < linha_ini || coluna_ini < 0 || coluna_fim < coluna_ini) return 0;
+int sum_range(spreadsheet_t* p, int start_line, int end_line, int start_col, int end_col) {
+    if (p == NULL || start_line < 0 || end_line < start_line || start_col < 0 || end_col < start_col) return 0;
     
-    int soma = 0;
-    fileira_t*fileira_linha_atual = p->primeira_linha;
+    int sum = 0;
+    row_col_t* curr_row_line = p->first_line;
     
-    while(fileira_linha_atual != NULL && fileira_linha_atual->indice < linha_ini){
-        fileira_linha_atual = fileira_linha_atual->proximo;
+    while (curr_row_line != NULL && curr_row_line->index < start_line) {
+        curr_row_line = curr_row_line->next;
     }
 
-    while(fileira_linha_atual != NULL && fileira_linha_atual->indice <= linha_fim){
-        celula_t*atual = fileira_linha_atual->primeiro;
+    while (curr_row_line != NULL && curr_row_line->index <= end_line) {
+        cell_t* current = curr_row_line->first;
 
-        while(atual != NULL && atual->coluna < coluna_ini){
-            atual = atual->proxima_coluna;
+        while (current != NULL && current->col < start_col) {
+            current = current->next_col;
         }
 
-        while(atual != NULL && atual->coluna <= coluna_fim){
-            soma += atual->valor;
-            atual = atual->proxima_coluna;
+        while (current != NULL && current->col <= end_col) {
+            sum += current->value;
+            current = current->next_col;
         }
-        fileira_linha_atual = fileira_linha_atual->proximo;
+        curr_row_line = curr_row_line->next;
     }
-    return soma;
+    return sum;
 }
 
-int contar_nao_nulas(planilha_t* p) {
-    // TODO: retorne a quantidade de celulas nao nulas
-    if(p == NULL) return 0;
+int count_non_null(spreadsheet_t* p) {
+    if (p == NULL) return 0;
 
     int count = 0;
-    fileira_t*fileira_linha_atual;
-    fileira_linha_atual = p->primeira_linha;
+    row_col_t* curr_row_line = p->first_line;
 
+    while (curr_row_line != NULL) {
+        cell_t* current = curr_row_line->first;
 
-    while(fileira_linha_atual != NULL){
-        celula_t*atual = fileira_linha_atual->primeiro;
-
-        while(atual != NULL){
+        while (current != NULL) {
             count++;
-            atual = atual->proxima_coluna;
+            current = current->next_col;
         }
 
-        fileira_linha_atual = fileira_linha_atual->proximo;
+        curr_row_line = curr_row_line->next;
     } 
     return count;
 }
 
-bool definir_celula(planilha_t* p, int lin, int col, int valor) {
-    /* TODO: implemente os 4 casos (atualizar/criar/remover/nulo),
-       empilhando em p->historico quando houver alteracao efetiva.
-       Retorna true se houve alteracao, false se foi operacao nula. */
-    if(p == NULL || lin < 0 || col < 0) return false;
+bool define_cell(spreadsheet_t* p, int line, int col, int value) {
+    if (p == NULL || line < 0 || col < 0) return false;
 
-    celula_t*cel_ant_linha, *cel_ant_coluna;
-    fileira_t*fil_ant_linha, *fil_ant_coluna;
+    cell_t *prev_cell_line, *prev_cell_col;
+    row_col_t *prev_row_line, *prev_row_col;
 
-    celula_t*atual = buscar_celula(p,lin,col,&cel_ant_linha, &cel_ant_coluna,
-                                     &fil_ant_linha, &fil_ant_coluna);
-    int valor_ant;
+    cell_t* current = search_cell(p, line, col, &prev_cell_line, &prev_cell_col,
+                                  &prev_row_line, &prev_row_col);
+    int prev_val;
     
-    if(atual) valor_ant = atual->valor;
-    else valor_ant = 0;
+    if (current) prev_val = current->value;
+    else prev_val = 0;
 
-    if(valor_ant == valor) return false;
-    //se valor da celula antiga = valor a ser adicionado, nao faz nada(nulo)
+    if (prev_val == value) return false;
 
-    elo_pilha_t*novo = (elo_pilha_t*) malloc(sizeof(elo_pilha_t));
-    novo->op.linha = lin;
-    novo->op.coluna = col;
-    novo->op.transposicao = false;
-    novo->op.valor_anterior = valor_ant;
-    novo->proximo = p->historico.topo;
-    p->historico.topo = novo;
+    stack_node_t* new_node = (stack_node_t*) malloc(sizeof(stack_node_t));
+    if (!new_node) return false;
+    new_node->op.line = line;
+    new_node->op.col = col;
+    new_node->op.is_transpose = false;
+    new_node->op.previous_value = prev_val;
+    new_node->next = p->history.top;
+    p->history.top = new_node;
 
-    if(atual != NULL && valor != 0){
-    //celula existe e valor != 0
-        atual->valor = valor;
+    if (current != NULL && value != 0) {
+        current->value = value;
     }
-
-    else if(atual == NULL && valor != 0){
-    //celula nao existe e valor != 0
-        celula_t*nova_celula = (celula_t*) malloc(sizeof(celula_t));
-        nova_celula->coluna = col;
-        nova_celula->linha = lin;
-        nova_celula->valor = valor;
+    else if (current == NULL && value != 0) {
+        cell_t* new_cell = (cell_t*) malloc(sizeof(cell_t));
+        if (!new_cell) return false;
+        new_cell->col = col;
+        new_cell->line = line;
+        new_cell->value = value;
         
-        fileira_t*nova_fil_lin;
-        fileira_t*nova_fil_col;
+        row_col_t* new_row_line;
+        row_col_t* new_row_col;
 
-        //nova fileira de linha
-        if(fil_ant_linha) nova_fil_lin = fil_ant_linha->proximo;
-        else nova_fil_lin = p->primeira_linha;
+        if (prev_row_line) new_row_line = prev_row_line->next;
+        else new_row_line = p->first_line;
 
-        if(nova_fil_lin == NULL || nova_fil_lin->indice != lin){
-        //nova fileira diferente da esperada -> nova fileira nao existe
-            nova_fil_lin = (fileira_t*) malloc(sizeof(fileira_t));
-            nova_fil_lin->indice = lin;
-            nova_fil_lin->primeiro = NULL;
+        if (new_row_line == NULL || new_row_line->index != line) {
+            new_row_line = (row_col_t*) malloc(sizeof(row_col_t));
+            if (!new_row_line) { free(new_cell); return false; }
+            new_row_line->index = line;
+            new_row_line->first = NULL;
             
+            if (prev_row_line == NULL) {
+                new_row_line->next = p->first_line;
+                p->first_line = new_row_line;                
+            }
+            else {
+                new_row_line->next = prev_row_line->next;
+                prev_row_line->next = new_row_line;
+            }
+        }
+
+        if (prev_row_col) new_row_col = prev_row_col->next;
+        else new_row_col = p->first_col;
+
+        if (new_row_col == NULL || new_row_col->index != col) {
+            new_row_col = (row_col_t*) malloc(sizeof(row_col_t));
+            if (!new_row_col) { free(new_cell); return false; }
+            new_row_col->index = col;
+            new_row_col->first = NULL;
             
-            if(fil_ant_linha == NULL){
-                nova_fil_lin->proximo = p->primeira_linha;
-                p->primeira_linha = nova_fil_lin;                
+            if (prev_row_col == NULL) {
+                new_row_col->next = p->first_col;
+                p->first_col = new_row_col;                
             }
-            else{
-                nova_fil_lin->proximo = fil_ant_linha->proximo;
-                fil_ant_linha->proximo = nova_fil_lin;
-            }
-
-
-        }
-
-        //nova fileira de coluna
-        if(fil_ant_coluna) nova_fil_col = fil_ant_coluna->proximo;
-        else nova_fil_col = p->primeira_coluna;
-
-        if(nova_fil_col == NULL || nova_fil_col->indice != col){
-        //nova fileira diferente da esperada -> nova fileira nao existe
-            nova_fil_col = (fileira_t*) malloc(sizeof(fileira_t));
-            nova_fil_col->indice = col;
-            nova_fil_col->primeiro = NULL;
-            
-            if(fil_ant_coluna == NULL){
-                nova_fil_col->proximo = p->primeira_coluna;
-                p->primeira_coluna = nova_fil_col;                
-            }
-            else{
-                nova_fil_col->proximo = fil_ant_coluna->proximo;
-                fil_ant_coluna->proximo = nova_fil_col;
+            else {
+                new_row_col->next = prev_row_col->next;
+                prev_row_col->next = new_row_col;
             }
         }
 
-        if(cel_ant_linha){
-            nova_celula->proxima_coluna = cel_ant_linha->proxima_coluna;
-            cel_ant_linha->proxima_coluna = nova_celula;
+        if (prev_cell_line) {
+            new_cell->next_col = prev_cell_line->next_col;
+            prev_cell_line->next_col = new_cell;
         }
-        else{
-            nova_celula->proxima_coluna = nova_fil_lin->primeiro;
-            nova_fil_lin->primeiro = nova_celula;
-        }
-
-
-        if(cel_ant_coluna){
-            nova_celula->proxima_linha = cel_ant_coluna->proxima_linha;
-            cel_ant_coluna->proxima_linha = nova_celula;
-        }
-        else{
-            nova_celula->proxima_linha = nova_fil_col->primeiro;
-            nova_fil_col->primeiro = nova_celula;
+        else {
+            new_cell->next_col = new_row_line->first;
+            new_row_line->first = new_cell;
         }
 
-        p->total_celulas++;
+        if (prev_cell_col) {
+            new_cell->next_line = prev_cell_col->next_line;
+            prev_cell_col->next_line = new_cell;
+        }
+        else {
+            new_cell->next_line = new_row_col->first;
+            new_row_col->first = new_cell;
+        }
+
+        p->total_cells++;
     }
-    else{
-    // celula existe e valor = 0 -> remover
-        fileira_t*fil_atual_lin;
-        fileira_t*fil_atual_col;
+    else {
+        row_col_t* curr_row_line;
+        row_col_t* curr_row_col;
         
-        //achar fileira de linhas atual
-        if(fil_ant_linha) fil_atual_lin = fil_ant_linha->proximo;
-        else fil_atual_lin = p->primeira_linha;
+        if (prev_row_line) curr_row_line = prev_row_line->next;
+        else curr_row_line = p->first_line;
 
-        //achar fileira de colunas atual
-        if(fil_ant_coluna) fil_atual_col = fil_ant_coluna->proximo;
-        else fil_atual_col = p->primeira_coluna;
+        if (prev_row_col) curr_row_col = prev_row_col->next;
+        else curr_row_col = p->first_col;
 
-        //remover a celula da linha
-        if(cel_ant_linha) cel_ant_linha->proxima_coluna = atual->proxima_coluna;
-        else fil_atual_lin->primeiro = atual->proxima_coluna;
+        if (prev_cell_line) prev_cell_line->next_col = current->next_col;
+        else curr_row_line->first = current->next_col;
 
-        //remover a celula da coluna
-        if(cel_ant_coluna) cel_ant_coluna->proxima_linha = atual->proxima_linha;
-        else fil_atual_col->primeiro = atual->proxima_linha;
+        if (prev_cell_col) prev_cell_col->next_line = current->next_line;
+        else curr_row_col->first = current->next_line;
 
-        if(fil_atual_lin->primeiro == NULL){
-            if(fil_ant_linha) fil_ant_linha->proximo = fil_atual_lin->proximo;
-            else p->primeira_linha = fil_atual_lin->proximo;
-            free(fil_atual_lin);
+        if (curr_row_line->first == NULL) {
+            if (prev_row_line) prev_row_line->next = curr_row_line->next;
+            else p->first_line = curr_row_line->next;
+            free(curr_row_line);
         }
 
-        if(fil_atual_col->primeiro == NULL){
-            
-            if(fil_ant_coluna) fil_ant_coluna->proximo = fil_atual_col->proximo;
-            else p->primeira_coluna = fil_atual_col->proximo;
-            free(fil_atual_col);
+        if (curr_row_col->first == NULL) {
+            if (prev_row_col) prev_row_col->next = curr_row_col->next;
+            else p->first_col = curr_row_col->next;
+            free(curr_row_col);
         }
 
-        free(atual);
-        p->total_celulas--;
+        free(current);
+        p->total_cells--;
     }
     return true;
 }
 
-bool remover_celula(planilha_t* p, int lin, int col) {
-    // TODO: remova a celula (lin,col)
-    if(p == NULL || lin < 0 || col < 0) return false;
+bool remove_cell(spreadsheet_t* p, int line, int col) {
+    if (p == NULL || line < 0 || col < 0) return false;
     
-    celula_t*cel_ant_linha, *cel_ant_coluna;
-    fileira_t*fil_ant_linha, *fil_ant_coluna, *fil_atual_linha, *fil_atual_coluna;
+    cell_t *prev_cell_line, *prev_cell_col;
+    row_col_t *prev_row_line, *prev_row_col, *curr_row_line, *curr_row_col;
 
+    cell_t* current = search_cell(p, line, col, &prev_cell_line, &prev_cell_col,
+                                  &prev_row_line, &prev_row_col);
 
+    if (current == NULL) return false;
 
-    celula_t*atual = buscar_celula(p,lin,col,&cel_ant_linha,&cel_ant_coluna,
-                                            &fil_ant_linha,&fil_ant_coluna);
-
-    if(atual == NULL) return false;
-
-    elo_pilha_t*novo = (elo_pilha_t*) malloc(sizeof(elo_pilha_t));
-    novo->op.coluna = col;
-    novo->op.linha = lin;
-    novo->op.transposicao = false;
-    novo->op.valor_anterior = atual->valor;
-    novo->proximo = p->historico.topo;
-    p->historico.topo = novo;
+    stack_node_t* new_node = (stack_node_t*) malloc(sizeof(stack_node_t));
+    if (!new_node) return false;
+    new_node->op.col = col;
+    new_node->op.line = line;
+    new_node->op.is_transpose = false;
+    new_node->op.previous_value = current->value;
+    new_node->next = p->history.top;
+    p->history.top = new_node;
     
-    //achar a fileira das linhas
-    if(fil_ant_linha) fil_atual_linha = fil_ant_linha->proximo;
-    else fil_atual_linha = p->primeira_linha;
+    if (prev_row_line) curr_row_line = prev_row_line->next;
+    else curr_row_line = p->first_line;
     
-    //achar a fileira das colunas
-    if(fil_ant_coluna) fil_atual_coluna = fil_ant_coluna->proximo;
-    else fil_atual_coluna = p->primeira_coluna;
+    if (prev_row_col) curr_row_col = prev_row_col->next;
+    else curr_row_col = p->first_col;
 
-    //remover a celula da linha
-    if(cel_ant_linha) cel_ant_linha->proxima_coluna = atual->proxima_coluna;
-    else fil_atual_linha->primeiro = atual->proxima_coluna;
+    if (prev_cell_line) prev_cell_line->next_col = current->next_col;
+    else curr_row_line->first = current->next_col;
 
-    //remover a celula da coluna
-    if(cel_ant_coluna) cel_ant_coluna->proxima_linha = atual->proxima_linha;
-    else fil_atual_coluna->primeiro = atual->proxima_linha;
+    if (prev_cell_col) prev_cell_col->next_line = current->next_line;
+    else curr_row_col->first = current->next_line;
 
-    //checar se as fileiras vao estar vazias ou n
-    if(fil_atual_linha->primeiro == NULL){
-        if(fil_ant_linha) fil_ant_linha->proximo = fil_atual_linha->proximo;
-        else p->primeira_linha = fil_atual_linha->proximo;
-        free(fil_atual_linha);
+    if (curr_row_line->first == NULL) {
+        if (prev_row_line) prev_row_line->next = curr_row_line->next;
+        else p->first_line = curr_row_line->next;
+        free(curr_row_line);
     }
 
-    if(fil_atual_coluna->primeiro == NULL){
-        if(fil_ant_coluna) fil_ant_coluna->proximo = fil_atual_coluna->proximo;
-        else p->primeira_coluna = fil_atual_coluna->proximo;
-        free(fil_atual_coluna);
+    if (curr_row_col->first == NULL) {
+        if (prev_row_col) prev_row_col->next = curr_row_col->next;
+        else p->first_col = curr_row_col->next;
+        free(curr_row_col);
     }
-    free(atual);
-    p->total_celulas--;
+    free(current);
+    p->total_cells--;
 
     return true;
 }
 
-bool transpor(planilha_t* p, int lin, int col, int tamanho) {
-    /* TODO: transpoe uma matriz quadrada que está localizada entre
-    as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */    
-    if (p == NULL || lin < 0 || col < 0 || tamanho <= 0) return false;
+bool transpose(spreadsheet_t* p, int line, int col, int size) {
+    if (p == NULL || line < 0 || col < 0 || size <= 0) return false;
 
-    int trocas = 0;
+    int swaps = 0;
 
-    for (int i = 0; i < tamanho; i++) {
-        for (int j = i + 1; j < tamanho; j++) {
-            int l1 = lin + i, c1 = col + j;
-            int l2 = lin + j, c2 = col + i;
+    for (int i = 0; i < size; i++) {
+        for (int j = i + 1; j < size; j++) {
+            int l1 = line + i, c1 = col + j;
+            int l2 = line + j, c2 = col + i;
 
-            int val1 = obter_valor(p, l1, c1);
-            int val2 = obter_valor(p, l2, c2);
+            int val1 = get_value(p, l1, c1);
+            int val2 = get_value(p, l2, c2);
 
             if (val1 != val2) {
-                definir_celula(p, l1, c1, val2);
-                definir_celula(p, l2, c2, val1);
-                trocas++;
+                define_cell(p, l1, c1, val2);
+                define_cell(p, l2, c2, val1);
+                swaps++;
             }
         }
     }
 
+    if (swaps == 0) return false;
 
-    if (trocas == 0) return false;
+    int to_remove = 2 * swaps;
 
-    int remover = 2 * trocas;
-
-    for (int k = 0; k < remover; k++) {
-        if (p->historico.topo != NULL) {
-            elo_pilha_t* temp = p->historico.topo;
-            p->historico.topo = temp->proximo;
+    for (int k = 0; k < to_remove; k++) {
+        if (p->history.top != NULL) {
+            stack_node_t* temp = p->history.top;
+            p->history.top = temp->next;
             free(temp);
         }
     }
 
-    elo_pilha_t* novo = (elo_pilha_t*) malloc(sizeof(elo_pilha_t));
-    if (!novo) return false;
+    stack_node_t* new_node = (stack_node_t*) malloc(sizeof(stack_node_t));
+    if (!new_node) return false;
 
-    novo->op.linha = lin;
-    novo->op.coluna = col;
-    novo->op.transposicao = true;
-    novo->op.tamanho = tamanho;
-    novo->proximo = p->historico.topo;
-    p->historico.topo = novo;
+    new_node->op.line = line;
+    new_node->op.col = col;
+    new_node->op.is_transpose = true;
+    new_node->op.size = size;
+    new_node->next = p->history.top;
+    p->history.top = new_node;
 
     return true;
 }
 
-bool desfazer(planilha_t* p) {
-    /* TODO: desempilhe de p->historico e restaure o valor anterior.
-       Retorna false se o historico estiver vazio, true caso contrario. */
+bool undo(spreadsheet_t* p) {
+    if (p == NULL || !p->history.top) return false;     
 
-    if(p == NULL || !p->historico.topo) return false;     
+    stack_node_t* remove_top = p->history.top;
+    operation_t op = remove_top->op;
 
-    elo_pilha_t* remover_topo = p->historico.topo;
-    operacao_t op = remover_topo->op;
+    p->history.top = remove_top->next;
+    free(remove_top);
 
-    p->historico.topo = remover_topo->proximo;
-    free(remover_topo);
+    int line = op.line;
+    int col = op.col;
+    int val = op.previous_value;
 
-    int lin = op.linha;
-    int col = op.coluna;
-    int val = op.valor_anterior;
+    if (op.is_transpose) {
+        int size = op.size;
+        transpose(p, line, col, size);
 
-    if(op.transposicao){
-        int tamanho = op.tamanho;
-        transpor(p,lin,col,tamanho);
-
-        elo_pilha_t*temp = p->historico.topo;
-        if(temp){
-            p->historico.topo = temp->proximo;
+        stack_node_t* temp = p->history.top;
+        if (temp) {
+            p->history.top = temp->next;
             free(temp);
         }
     }
-    else{
-        definir_celula(p, lin, col, val);
-        elo_pilha_t*temp = p->historico.topo;
-        p->historico.topo = temp->proximo;
-        free(temp);
+    else {
+        define_cell(p, line, col, val);
+        stack_node_t* temp = p->history.top;
+        if (temp) {
+            p->history.top = temp->next;
+            free(temp);
+        }
     }
     return true;
 }
 
-void exibir_planilha(planilha_t *p) {
-    /* TODO: imprima "linha coluna valor" por linha, em ordem crescente
-       de linha e, dentro de cada linha, de coluna. Se vazia, imprima
-       "PLANILHA VAZIA" */
-    if(p == NULL){
+void show_spreadsheet(spreadsheet_t *p) {
+    if (p == NULL) {
         printf("PLANILHA VAZIA\n");
         return; 
     }
 
-    fileira_t*fileira_linha_atual;
-    fileira_linha_atual = p->primeira_linha;
+    row_col_t* curr_row_line = p->first_line;
 
-    while(fileira_linha_atual != NULL){
-        celula_t*atual = fileira_linha_atual->primeiro;
-        while(atual != NULL){
-            printf("%d %d %d\n",atual->linha,atual->coluna,atual->valor);
-            atual = atual->proxima_coluna;
+    while (curr_row_line != NULL) {
+        cell_t* current = curr_row_line->first;
+        while (current != NULL) {
+            printf("%d %d %d\n", current->line, current->col, current->value);
+            current = current->next_col;
         }
-        fileira_linha_atual = fileira_linha_atual->proximo;
+        curr_row_line = curr_row_line->next;
     }
-
 }
 
-void exibir_historico(planilha_t* p) {
-    /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
-       para a base. Se vazio, imprima "HISTORICO VAZIO" */
-
-    if(p == NULL || p->historico.topo == NULL) {
+void show_history(spreadsheet_t* p) {
+    if (p == NULL || p->history.top == NULL) {
         printf("HISTORICO VAZIO\n");
         return;
     }
 
-    elo_pilha_t* atual = p->historico.topo;
-    while(atual){
-        if(!atual->op.transposicao){
-            printf("%d %d %d\n", atual->op.linha, atual->op.coluna, atual->op.valor_anterior);
+    stack_node_t* current = p->history.top;
+    while (current) {
+        if (!current->op.is_transpose) {
+            printf("%d %d %d\n", current->op.line, current->op.col, current->op.previous_value);
         } else {
-            printf("T %d %d %d\n", atual->op.linha, atual->op.coluna, atual->op.tamanho);
+            printf("T %d %d %d\n", current->op.line, current->op.col, current->op.size);
         }
-        atual = atual->proximo;
+        current = current->next;
     }
 }
 
-void liberar_tudo(planilha_t* p) {
-    // TODO: libere toda a memória alocada por fileira, celula, e pilha.
-    if(p == NULL) return;
-    fileira_t*fileira_linha = p->primeira_linha;
+void free_all(spreadsheet_t* p) {
+    if (p == NULL) return;
 
-    while(fileira_linha != NULL){
-        celula_t*apagar;
-        celula_t*atual = fileira_linha->primeiro;
+    row_col_t* row_line = p->first_line;
 
-        while(atual != NULL){
-            apagar = atual;
-            atual = atual->proxima_coluna;
-            free(apagar);
+    while (row_line != NULL) {
+        cell_t* to_delete;
+        cell_t* current = row_line->first;
+
+        while (current != NULL) {
+            to_delete = current;
+            current = current->next_col;
+            free(to_delete);
         }
 
-        fileira_linha = fileira_linha->proximo;
+        row_line = row_line->next;
     }
 
-    fileira_t*fileira_linha_apagar;
-    fileira_t*fileira_linha_atual = p->primeira_linha;
-    while(fileira_linha_atual != NULL){
-        fileira_linha_apagar = fileira_linha_atual;
-        fileira_linha_atual = fileira_linha_atual->proximo;
-        free(fileira_linha_apagar);
+    row_col_t* row_line_delete;
+    row_col_t* curr_row_line = p->first_line;
+    while (curr_row_line != NULL) {
+        row_line_delete = curr_row_line;
+        curr_row_line = curr_row_line->next;
+        free(row_line_delete);
     }
     
-    fileira_t*fileira_coluna_apagar;
-    fileira_t*fileira_coluna_atual = p->primeira_coluna;
-    while(fileira_coluna_atual != NULL){
-        fileira_coluna_apagar = fileira_coluna_atual;
-        fileira_coluna_atual = fileira_coluna_atual->proximo;
-        free(fileira_coluna_apagar);
+    row_col_t* row_col_delete;
+    row_col_t* curr_row_col = p->first_col;
+    while (curr_row_col != NULL) {
+        row_col_delete = curr_row_col;
+        curr_row_col = curr_row_col->next;
+        free(row_col_delete);
     }
 
-    elo_pilha_t*apagar;
-    elo_pilha_t*atual = p->historico.topo;
-    while(atual != NULL){
-        apagar = atual;
-        atual = atual->proximo;
-        free(apagar);
+    stack_node_t* to_delete_node;
+    stack_node_t* curr_node = p->history.top;
+    while (curr_node != NULL) {
+        to_delete_node = curr_node;
+        curr_node = curr_node->next;
+        free(to_delete_node);
     }
-    p->historico.topo = NULL;
-    p->primeira_coluna = NULL;
-    p->primeira_linha = NULL;
-    p->total_celulas = 0;
-
+    p->history.top = NULL;
+    p->first_col = NULL;
+    p->first_line = NULL;
+    p->total_cells = 0;
 }
 
 /* ---------------------------------------------------------------------- *
-    Main para leitura de arquivos (já pronta no caso, pode ser que na versão final deixemos sem)
+    Main Execution Block
  ---------------------------------------------------------------------- */
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        printf("Uso do comando eh: %s arquivo_entrada.txt arquivo_saida.txt\n", argv[0]);
+        printf("Use command: %s input_file.txt output_file.txt\n", argv[0]);
         return 1;
     }
     
-    FILE* entrada = fopen(argv[1], "r");
-    FILE* saida = freopen(argv[2], "w", stdout);
+    FILE* input = fopen(argv[1], "r");
+    FILE* output = freopen(argv[2], "w", stdout);
 
-    if (!entrada || !saida) {
-        fprintf(stderr, "Erro ao tentar abrir os arquivos.\n");
+    if (!input || !output) {
+        fprintf(stderr, "Error opening files.\n");
         return 1;
     }
 
-    planilha_t p;
-    inicializar_planilha(&p);
+    spreadsheet_t p;
+    start_spreadsheet(&p);
 
     int n;
-    fscanf(entrada, "%d", &n);
+    fscanf(input, "%d", &n);
 
     char cmd[20];
 
-    while (fscanf(entrada, "%s", cmd) != EOF) {
+    while (fscanf(input, "%s", cmd) != EOF) {
  
-        if (igual(cmd, "DEF")) {
-            int lin, col, valor;
-            fscanf(entrada, "%d %d %d", &lin, &col, &valor);
-            definir_celula(&p, lin, col, valor);
-        } else if (igual(cmd, "REM")) {
-            int lin, col;
-            fscanf(entrada, "%d %d", &lin, &col);
-            remover_celula(&p, lin, col);
-        } else if (igual(cmd, "GET")) {
-            int lin, col;
-            fscanf(entrada, "%d %d", &lin, &col);
-            fprintf(saida, "GET %d %d %d\n", lin, col, obter_valor(&p, lin, col));
-        } else if (igual(cmd, "SOMA")) {
+        if (equals(cmd, "DEF")) {
+            int line, col, value;
+            fscanf(input, "%d %d %d", &line, &col, &value);
+            define_cell(&p, line, col, value);
+        } else if (equals(cmd, "REM")) {
+            int line, col;
+            fscanf(input, "%d %d", &line, &col);
+            remove_cell(&p, line, col);
+        } else if (equals(cmd, "GET")) {
+            int line, col;
+            fscanf(input, "%d %d", &line, &col);
+            fprintf(output, "GET %d %d %d\n", line, col, get_value(&p, line, col));
+        } else if (equals(cmd, "SUM")) {
             int li, lf, ci, cf;
-            fscanf(entrada, "%d %d %d %d", &li, &lf, &ci, &cf);
-            fprintf(saida, "SOMA %d %d %d %d %d\n", li, lf, ci, cf, somar_intervalo(&p, li, lf, ci, cf));
-        } else if (igual(cmd, "CONT")) {
-            fprintf(saida, "CONT %d\n", contar_nao_nulas(&p));
-        } else if (igual(cmd, "DESFAZER")) {
-            if (!desfazer(&p)) {
-                fprintf(saida, "HISTORICO VAZIO\n");
+            fscanf(input, "%d %d %d %d", &li, &lf, &ci, &cf);
+            fprintf(output, "SUM %d %d %d %d %d\n", li, lf, ci, cf, sum_range(&p, li, lf, ci, cf));
+        } else if (equals(cmd, "COUNT")) {
+            fprintf(output, "COUNT %d\n", count_non_null(&p));
+        } else if (equals(cmd, "UNDO")) {
+            if (!undo(&p)) {
+                fprintf(output, "EMPTY HISTORY\n");
             }
-        } else if (igual(cmd, "EXIBIR")) {
-            if (contar_nao_nulas(&p)) {
-                printf("PLANILHA\n");
-                exibir_planilha(&p);
+        } else if (equals(cmd, "SHOW")) {
+            if (count_non_null(&p)) {
+                printf("SPREADSHEET\n");
+                show_spreadsheet(&p);
             } else {
-                printf("PLANILHA VAZIA\n");
+                printf("EMPTY SPREADSHEET\n");
             }
-        } else if (igual(cmd, "HIST")) {
-            if (p.historico.topo) {
-                printf("HISTORICO\n");
-                exibir_historico(&p);
+        } else if (equals(cmd, "HISTORY")) {
+            if (p.history.top) {
+                printf("HISTORY\n");
+                show_history(&p);
             }
             else {
-                printf("HISTORICO VAZIO\n");
+                printf("EMPTY HISTORY\n");
             }
-        } else if (igual(cmd, "TRANS")) {
-            int lin, col, tam;
-            fscanf(entrada, "%d %d %d", &lin, &col, &tam);
-            transpor(&p, lin, col, tam);
+        } else if (equals(cmd, "TRANSPOSE")) {
+            int line, col, size;
+            fscanf(input, "%d %d %d", &line, &col, &size);
+            transpose(&p, line, col, size);
         }
     }
 
-    fclose(entrada);
-    fclose(saida);
+    fclose(input);
+    fclose(output);
 
-    liberar_tudo(&p);
+    free_all(&p);
     return 0;
 }
