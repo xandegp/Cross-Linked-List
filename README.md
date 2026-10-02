@@ -63,10 +63,11 @@ UNDO – Reverts the last operation (undo)
 SHOW – Displays the current state of the spreadsheet (show_spreadsheet)
 
 HISTORY – Displays the history of changes (show_history)
+
     
 .Commands are processed in the order they appear in the input file
 
-.Example Input:
+###Example Input:
 
     Plaintext
     DEF 0 1 12
@@ -98,7 +99,8 @@ HISTORY: Prints HISTORY followed by a line for each operation on the stack from 
 
 .Standard output is redirected to the output file. Therefore, calls to printf directly write to the output file.
 
-.Example Output corresponding to the Example Input:
+
+###Example Output corresponding to the Example Input:
 
     Plaintext
     GET 0 1 12
