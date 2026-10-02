@@ -43,64 +43,72 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
     
     ./Cross-Linked-List (name of the input file).txt (name of a file that the program will make).txt
 
- ##Input file:
- .The Input file have a command per line, in the following format:
+## Input File:
+.The input file contains one command per line in the following format:
 
-    .DEF lin col 
+•DEF line col value – Equivalent to calling define_cell with the provided parameters;
 
+•REM line col – Equivalent to calling remove_cell;
 
-O arquivo de entrada possui um comando por linha, no seguinte formato:
-• DEF lin col valor – equivalente a chamar definir_celula com os parâmetros
-informados;
-• REM lin col – equivalente a chamar remover_celula;
-• GET lin col – consulta o valor da célula (obter_valor);
-• SOMA li lf ci cf – soma o intervalo [li, lf] × [ci, cf] (somar_intervalo);
-• CONT – consulta o número de células não nulas (contar_nao_nulas);
-• TRANS lin col tam – transpõe a matriz quadrada com canto superior esquerdo
-(lin, col) e dimensão tam;
-• DESFAZER – desfaz a última operação (desfazer);
-• EXIBIR – exibe o estado atual da planilha (exibir_planilha);
-• HIST – exibe o histórico de alterações (exibir_historico).
-Os comandos são processados na ordem em que aparecem no arquivo de entrada.
-Exemplo de entrada:
-DEF 0 1 12
-DEF 0 3 5
-DEF 2 1 7
-GET 0 1
-SOMA 0 2 0 3
-9
-CONT
-REM 0 3
-DESFAZER
-EXIBIR
-HIST
-5.2 Arquivo de saída
-Os comandos especificados na seção anterior produzem as seguintes saídas ao serem processados:
-• GET lin col: imprime uma linha com GET linha coluna valor (usa
-obter_valor);
-• SOMA li lf ci cf: imprime uma linha com SOMA li lf ci cf e o valor retornado
-por somar_intervalo;
-• CONT: imprime uma linha com CONT e o valor retornado por contar_nao_nulas;
-• DESFAZER: se a pilha de histórico estiver vazia, imprime "HISTORICO VAZIO"; caso
-contrário, não produz saída;
-• EXIBIR: imprime PLANILHA seguido de uma linha linha coluna valor para cada
-célula não nula, na ordem descrita na Seção 4; se a planilha estiver vazia, imprime
-apenas "PLANILHA VAZIA";
-• HIST: imprime HISTORICO seguido de uma linha para cada operação na pilha no
-formato definido na Seção 4.11, do topo para a base; se o histórico estiver vazio,
-imprime apenas "HISTORICO VAZIO".
-• Os comandos DEF, REM e TRANS não geram saída.
-A saída padrão do programa é redirecionada para o arquivo de saída. Então, o uso de
-printf irá interferir no arquivo de saída.
-Exemplo de saída referente ao exemplo de entrada da Seção 5.1:
-GET 0 1 12
-SOMA 0 2 0 3 24
-CONT 3
-PLANILHA
-0 1 12
-0 3 5
-2 1 7
-HISTORICO
-2 1 0
-0 3 0
-0 1 0
+•GET line col – Queries the value of a cell (get_value);
+
+•SUM start_line end_line start_col end_col – Sums the range [start_line, end_line] × [start_col, end_col] (sum_range);
+
+•COUNT – Queries the number of non-null cells (count_non_null);
+
+•TRANSPOSE line col size – Transposes the square submatrix with top-left corner (line, col) and dimension size;
+
+•UNDO – Reverts the last operation (undo);
+
+•SHOW – Displays the current state of the spreadsheet (show_spreadsheet);
+
+•HISTORY – Displays the history of changes (show_history).
+
+.Commands are processed in the order they appear in the input file.
+
+.Example Input:
+
+    Plaintext
+    DEF 0 1 12
+    DEF 0 3 5
+    DEF 2 1 7
+    GET 0 1
+    SUM 0 2 0 3
+    COUNT
+    REM 0 3
+    UNDO
+    SHOW
+    HISTORY
+## Output File:
+.The commands specified in the previous section produce the following outputs when processed:
+
+•GET line col: Prints a single line with GET line col value (uses get_value);
+
+•SUM start_line end_line start_col end_col: Prints a single line with SUM start_line end_line start_col end_col followed by the value returned by sum_range;
+
+•COUNT: Prints a single line with COUNT followed by the value returned by count_non_null;
+
+•UNDO: If the history stack is empty, prints "EMPTY HISTORY"; otherwise, produces no output;
+
+•SHOW: Prints SPREADSHEET followed by a line line col value for each non-null cell, sorted by row and column; if the spreadsheet is empty, prints EMPTY SPREADSHEET;
+
+•HISTORY: Prints HISTORY followed by a line for each operation on the stack from top to bottom; if the history is empty, prints EMPTY HISTORY.
+
+.The commands DEF, REM, and TRANSPOSE produce no output.
+
+.Standard output is redirected to the output file. Therefore, calls to printf directly write to the output file.
+
+.Example Output corresponding to the Example Input:
+
+    Plaintext
+    GET 0 1 12
+    SUM 0 2 0 3 24
+    COUNT 3
+    SPREADSHEET
+    0 1 12
+    0 3 5
+    2 1 7
+    HISTORY
+    2 1 0
+    0 3 0
+    0 1 0
