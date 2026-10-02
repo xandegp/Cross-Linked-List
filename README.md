@@ -81,12 +81,18 @@ HISTORY – Displays the history of changes (show_history)
     HISTORY
 ## Output File:
 .The commands specified in the previous section produce the following outputs when processed:
-    •GET line col: Prints a single line with GET line col value (uses get_value)
-    •SUM start_line end_line start_col end_col: Prints a single line with SUM start_line end_line start_col end_col followed by the value returned by sum_range
-    •COUNT: Prints a single line with COUNT followed by the value returned by count_non_null
-    •UNDO: If the history stack is empty, prints "EMPTY HISTORY"; otherwise, produces no output
-    •SHOW: Prints SPREADSHEET followed by a line line col value for each non-null cell, sorted by row and column; if the spreadsheet is empty, prints EMPTY SPREADSHEET
-    •HISTORY: Prints HISTORY followed by a line for each operation on the stack from top to bottom; if the history is empty, prints EMPTY HISTORY
+
+GET line col: Prints a single line with GET line col value (uses get_value)
+
+SUM start_line end_line start_col end_col: Prints a single line with SUM start_line end_line start_col end_col followed by the value returned by sum_range
+
+COUNT: Prints a single line with COUNT followed by the value returned by count_non_null
+
+UNDO: If the history stack is empty, prints "EMPTY HISTORY"; otherwise, produces no output
+
+SHOW: Prints SPREADSHEET followed by a line line col value for each non-null cell, sorted by row and column; if the spreadsheet is empty, prints EMPTY SPREADSHEET
+
+HISTORY: Prints HISTORY followed by a line for each operation on the stack from top to bottom; if the history is empty, prints EMPTY HISTORY
 
 .The commands DEF, REM, and TRANSPOSE produce no output.
 
