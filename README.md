@@ -45,15 +45,15 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
 
 ## Input File:
 .The input file contains one command per line in the following format:
-    DEF line col value – Equivalent to calling define_cell with the provided parameters;
-    REM line col – Equivalent to calling remove_cell;
-    GET line col – Queries the value of a cell (get_value);
-    SUM start_line end_line start_col end_col – Sums the range [start_line, end_line] × [start_col, end_col] (sum_range);
-    COUNT – Queries the number of non-null cells (count_non_null);
-    TRANSPOSE line col size – Transposes the square submatrix with top-left corner (line, col) and dimension size;
-    UNDO – Reverts the last operation (undo);
-    SHOW – Displays the current state of the spreadsheet (show_spreadsheet);
-    HISTORY – Displays the history of changes (show_history).
+    .DEF line col value – Equivalent to calling define_cell with the provided parameters;
+    .REM line col – Equivalent to calling remove_cell;
+    .GET line col – Queries the value of a cell (get_value);
+    .SUM start_line end_line start_col end_col – Sums the range [start_line, end_line] × [start_col, end_col] (sum_range);
+    .COUNT – Queries the number of non-null cells (count_non_null);
+    .TRANSPOSE line col size – Transposes the square submatrix with top-left corner (line, col) and dimension size;
+    .UNDO – Reverts the last operation (undo);
+    .SHOW – Displays the current state of the spreadsheet (show_spreadsheet);
+    .HISTORY – Displays the history of changes (show_history).
     
 .Commands are processed in the order they appear in the input file.
 
