@@ -18,11 +18,11 @@ typedef struct cell {
     struct cell *next_col;
 } cell_t;
 
-typedef struct row_col {
+typedef struct row {
     int index;
     cell_t* first;
-    struct row_col *next;
-} row_col_t;
+    struct row *next;
+} row_t;
 
 typedef struct {
     bool is_transpose;
@@ -44,8 +44,8 @@ typedef struct {
 } stack_t;
 
 typedef struct {
-    row_col_t* first_line;
-    row_col_t* first_col;
+    row_t* first_line;
+    row_t* first_col;
     int total_cells;
     stack_t history;
 } spreadsheet_t;
@@ -74,7 +74,7 @@ void start_spreadsheet(spreadsheet_t *p) {
 
 cell_t* search_cell(spreadsheet_t *p, int line, int col,
                     cell_t** prev_cell_line, cell_t** prev_cell_col,
-                    row_col_t** prev_row_line, row_col_t** prev_row_col) {
+                    row_t** prev_row_line, row_t** prev_row_col) {
     cell_t* current = NULL;
     cell_t* temp_line = NULL;
     cell_t* temp_col = NULL;
@@ -86,8 +86,8 @@ cell_t* search_cell(spreadsheet_t *p, int line, int col,
 
     if (line < 0 || col < 0 || p == NULL) return NULL;
 
-    row_col_t *curr_row_line = p->first_line;
-    row_col_t *curr_row_col = p->first_col;
+    row_t *curr_row_line = p->first_line;
+    row_t *curr_row_col = p->first_col;
 
     while (curr_row_line != NULL && curr_row_line->index < line) {
         if (prev_row_line) *prev_row_line = curr_row_line;
@@ -133,7 +133,7 @@ int sum_range(spreadsheet_t* p, int start_line, int end_line, int start_col, int
     if (p == NULL || start_line < 0 || end_line < start_line || start_col < 0 || end_col < start_col) return 0;
     
     int sum = 0;
-    row_col_t* curr_row_line = p->first_line;
+    row_t* curr_row_line = p->first_line;
     
     while (curr_row_line != NULL && curr_row_line->index < start_line) {
         curr_row_line = curr_row_line->next;
@@ -159,7 +159,7 @@ int count_non_null(spreadsheet_t* p) {
     if (p == NULL) return 0;
 
     int count = 0;
-    row_col_t* curr_row_line = p->first_line;
+    row_t* curr_row_line = p->first_line;
 
     while (curr_row_line != NULL) {
         cell_t* current = curr_row_line->first;
@@ -178,7 +178,7 @@ bool define_cell(spreadsheet_t* p, int line, int col, int value) {
     if (p == NULL || line < 0 || col < 0) return false;
 
     cell_t *prev_cell_line, *prev_cell_col;
-    row_col_t *prev_row_line, *prev_row_col;
+    row_t *prev_row_line, *prev_row_col;
 
     cell_t* current = search_cell(p, line, col, &prev_cell_line, &prev_cell_col,
                                   &prev_row_line, &prev_row_col);
@@ -208,14 +208,14 @@ bool define_cell(spreadsheet_t* p, int line, int col, int value) {
         new_cell->line = line;
         new_cell->value = value;
         
-        row_col_t* new_row_line;
-        row_col_t* new_row_col;
+        row_t* new_row_line;
+        row_t* new_row_col;
 
         if (prev_row_line) new_row_line = prev_row_line->next;
         else new_row_line = p->first_line;
 
         if (new_row_line == NULL || new_row_line->index != line) {
-            new_row_line = (row_col_t*) malloc(sizeof(row_col_t));
+            new_row_line = (row_t*) malloc(sizeof(row_t));
             if (!new_row_line) { free(new_cell); return false; }
             new_row_line->index = line;
             new_row_line->first = NULL;
@@ -234,7 +234,7 @@ bool define_cell(spreadsheet_t* p, int line, int col, int value) {
         else new_row_col = p->first_col;
 
         if (new_row_col == NULL || new_row_col->index != col) {
-            new_row_col = (row_col_t*) malloc(sizeof(row_col_t));
+            new_row_col = (row_t*) malloc(sizeof(row_t));
             if (!new_row_col) { free(new_cell); return false; }
             new_row_col->index = col;
             new_row_col->first = NULL;
@@ -270,8 +270,8 @@ bool define_cell(spreadsheet_t* p, int line, int col, int value) {
         p->total_cells++;
     }
     else {
-        row_col_t* curr_row_line;
-        row_col_t* curr_row_col;
+        row_t* curr_row_line;
+        row_t* curr_row_col;
         
         if (prev_row_line) curr_row_line = prev_row_line->next;
         else curr_row_line = p->first_line;
@@ -307,7 +307,7 @@ bool remove_cell(spreadsheet_t* p, int line, int col) {
     if (p == NULL || line < 0 || col < 0) return false;
     
     cell_t *prev_cell_line, *prev_cell_col;
-    row_col_t *prev_row_line, *prev_row_col, *curr_row_line, *curr_row_col;
+    row_t *prev_row_line, *prev_row_col, *curr_row_line, *curr_row_col;
 
     cell_t* current = search_cell(p, line, col, &prev_cell_line, &prev_cell_col,
                                   &prev_row_line, &prev_row_col);
@@ -438,7 +438,7 @@ void show_spreadsheet(spreadsheet_t *p) {
         return; 
     }
 
-    row_col_t* curr_row_line = p->first_line;
+    row_t* curr_row_line = p->first_line;
 
     while (curr_row_line != NULL) {
         cell_t* current = curr_row_line->first;
@@ -470,7 +470,7 @@ void show_history(spreadsheet_t* p) {
 void free_all(spreadsheet_t* p) {
     if (p == NULL) return;
 
-    row_col_t* row_line = p->first_line;
+    row_t* row_line = p->first_line;
 
     while (row_line != NULL) {
         cell_t* to_delete;
@@ -485,16 +485,16 @@ void free_all(spreadsheet_t* p) {
         row_line = row_line->next;
     }
 
-    row_col_t* row_line_delete;
-    row_col_t* curr_row_line = p->first_line;
+    row_t* row_line_delete;
+    row_t* curr_row_line = p->first_line;
     while (curr_row_line != NULL) {
         row_line_delete = curr_row_line;
         curr_row_line = curr_row_line->next;
         free(row_line_delete);
     }
     
-    row_col_t* row_col_delete;
-    row_col_t* curr_row_col = p->first_col;
+    row_t* row_col_delete;
+    row_t* curr_row_col = p->first_col;
     while (curr_row_col != NULL) {
         row_col_delete = curr_row_col;
         curr_row_col = curr_row_col->next;
