@@ -45,28 +45,29 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
 
 ## Input File:
 .The input file contains one command per line in the following format:
+    
+DEF line col value – Equivalent to calling define_cell with the provided parameters
 
-•DEF line col value – Equivalent to calling define_cell with the provided parameters;
+REM line col – Equivalent to calling remove_cell
 
-•REM line col – Equivalent to calling remove_cell;
+GET line col – Queries the value of a cell (get_value)
 
-•GET line col – Queries the value of a cell (get_value);
+SUM start_line end_line start_col end_col – Sums the range [start_line, end_line] × [start_col, end_col] (sum_range)
 
-•SUM start_line end_line start_col end_col – Sums the range [start_line, end_line] × [start_col, end_col] (sum_range);
+COUNT – Queries the number of non-null cells (count_non_null)
 
-•COUNT – Queries the number of non-null cells (count_non_null);
+TRANSPOSE line col size – Transposes the square submatrix with top-left corner (line, col) and dimension size
 
-•TRANSPOSE line col size – Transposes the square submatrix with top-left corner (line, col) and dimension size;
+UNDO – Reverts the last operation (undo)
 
-•UNDO – Reverts the last operation (undo);
+SHOW – Displays the current state of the spreadsheet (show_spreadsheet)
 
-•SHOW – Displays the current state of the spreadsheet (show_spreadsheet);
+HISTORY – Displays the history of changes (show_history)
 
-•HISTORY – Displays the history of changes (show_history).
+    
+.Commands are processed in the order they appear in the input file
 
-.Commands are processed in the order they appear in the input file.
-
-.Example Input:
+### Example Input:
 
     Plaintext
     DEF 0 1 12
@@ -82,23 +83,24 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
 ## Output File:
 .The commands specified in the previous section produce the following outputs when processed:
 
-•GET line col: Prints a single line with GET line col value (uses get_value);
+GET line col: Prints a single line with GET line col value (uses get_value)
 
-•SUM start_line end_line start_col end_col: Prints a single line with SUM start_line end_line start_col end_col followed by the value returned by sum_range;
+SUM start_line end_line start_col end_col: Prints a single line with SUM start_line end_line start_col end_col followed by the value returned by sum_range
 
-•COUNT: Prints a single line with COUNT followed by the value returned by count_non_null;
+COUNT: Prints a single line with COUNT followed by the value returned by count_non_null
 
-•UNDO: If the history stack is empty, prints "EMPTY HISTORY"; otherwise, produces no output;
+UNDO: If the history stack is empty, prints "EMPTY HISTORY"; otherwise, produces no output
 
-•SHOW: Prints SPREADSHEET followed by a line line col value for each non-null cell, sorted by row and column; if the spreadsheet is empty, prints EMPTY SPREADSHEET;
+SHOW: Prints SPREADSHEET followed by a line line col value for each non-null cell, sorted by row and column; if the spreadsheet is empty, prints EMPTY SPREADSHEET
 
-•HISTORY: Prints HISTORY followed by a line for each operation on the stack from top to bottom; if the history is empty, prints EMPTY HISTORY.
+HISTORY: Prints HISTORY followed by a line for each operation on the stack from top to bottom; if the history is empty, prints EMPTY HISTORY
 
 .The commands DEF, REM, and TRANSPOSE produce no output.
 
 .Standard output is redirected to the output file. Therefore, calls to printf directly write to the output file.
 
-.Example Output corresponding to the Example Input:
+
+### Example Output corresponding to the Example Input:
 
     Plaintext
     GET 0 1 12
