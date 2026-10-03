@@ -26,13 +26,13 @@ This data structure is a better way to store data in a spreadsheet, using  Linke
 ## How to use:
 * Download the Input files in this repository (you can also download the Output files to compare the output that the program make in your local envirement)
 
-Download the repository on your local environment copying and pasting the following code on your terminal:
+* Download the repository on your local environment copying and pasting the following code on your terminal:
 
     git clone https://github.com/xandegp/Cross-Linked-List.git
 
 * Locate which directory the file was saved
 
-.At the terminal, put the following code until you find the Cross-Linked-List file:
+* At the terminal, put the following code until you find the Cross-Linked-List file:
 
     cd (directory where the file was saved)
 
