@@ -1,10 +1,10 @@
-# Cross-Linked-List
-Cross-Linked List developed in C
+# Crossed Linked-List
+Crossed Linked List developed in C
 
 This project is a Cross-Linked List developed in C
 
 ## Introduction:
-This data structure is a better way to store data in a spreadsheet, using  Linked Lists to link rows and cell together to use less memory comparing to a dynamic or static allocated matrix. Also, it uses a stack system where it store the last edit the user made to make it possible to restore the last value of the cell, and it have a function to transpose a piece of the spreadsheet.
+The Crossed Linked List is a data structure that is a better way to store data in a spreadsheet, using  Linked Lists to link rows and cell together to use less memory comparing to a dynamic or static allocated matrix. Also, it uses a stack system where it store the last change the user made to make it possible to restore the last value of the cell, and it have a function to transpose a piece of the spreadsheet, to switch the values of the cells in a part of the spreadsheet.
 
 ## Functions:
 1. start_spreadsheet
